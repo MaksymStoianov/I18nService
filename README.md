@@ -14,7 +14,7 @@ I18nService is an object that implements internationalization functionality.
 ### Example 1
 
 ```javascript
-const data = {,
+const data = {
   "bg": {
     title: "Тестово приложение"
   },
@@ -46,7 +46,7 @@ console.log(__('title'));
 
 const data = {
   title: "Example Application"
-}
+};
 const locale = "en";
 
 const i18n = I18nService
