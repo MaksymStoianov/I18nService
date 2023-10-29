@@ -49,10 +49,10 @@ const data = {
 const locale = "en";
 
 const i18n = I18nService
-  .init('en')
+  .init(locale)
   .load(data, locale);
 
-console.log(i18n.getLanguage('en').getTranslate('title'));
+console.log(i18n.getLanguage(locale).getTranslate('title'));
 console.log(__('title'));
 ```
 
@@ -67,7 +67,7 @@ const i18n = I18nService
   .init('ru')
   .load(sheet);
 
-console.log(JSON.stringify(i18n._values, null, 2));
+console.log(i18n.getLanguage('ru').getTranslate('title'));
 console.log(__('title'));
 ```
 
