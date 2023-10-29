@@ -43,7 +43,6 @@ console.log(__('title'));
 ### Пример 2
 
 ```javascript
-
 const data = {
   title: "Example Application"
 };
@@ -54,6 +53,21 @@ const i18n = I18nService
   .load(data, locale);
 
 console.log(i18n.getLanguage('en').getTranslate('title'));
+console.log(__('title'));
+```
+
+### Пример 3
+
+```javascript
+const sheet = SpreadsheetApp
+  .getActiveSpreadsheet()
+  .getSheetByName('I18n');
+
+const i18n = I18nService
+  .init('ru')
+  .load(sheet);
+
+console.log(JSON.stringify(i18n._values, null, 2));
 console.log(__('title'));
 ```
 
