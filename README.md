@@ -43,17 +43,31 @@ console.log(__('title'));
 ### Example 2
 
 ```javascript
-
 const data = {
   title: "Example Application"
 };
 const locale = "en";
 
 const i18n = I18nService
-  .init('en')
+  .init(locale)
   .load(data, locale);
 
-console.log(i18n.getLanguage('en').getTranslate('title'));
+console.log(i18n.getLanguage(locale).getTranslate('title'));
+console.log(__('title'));
+```
+
+### Example 3
+
+```javascript
+const sheet = SpreadsheetApp
+  .getActiveSpreadsheet()
+  .getSheetByName('I18n');
+
+const i18n = I18nService
+  .init('ru')
+  .load(sheet);
+
+console.log(i18n.getLanguage('ru').getTranslate('title'));
 console.log(__('title'));
 ```
 
