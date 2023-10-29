@@ -46,7 +46,7 @@ console.log(__('title'));
 const data = {
   title: "Example Application"
 };
-const locale = "en";
+const locale = "ru";
 
 const i18n = I18nService
   .init(locale)
