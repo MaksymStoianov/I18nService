@@ -36,7 +36,7 @@ const i18n = I18nService
   .init('ru')
   .load(data);
 
-console.log(i18n.getLanguage('ru').getTranslate('title'));
+console.log(i18n.getLanguage('en').getTranslate('title'));
 console.log(__('title'));
 ```
 
@@ -64,10 +64,10 @@ const sheet = SpreadsheetApp
   .getSheetByName('I18n');
 
 const i18n = I18nService
-  .init('ru')
+  .init('en')
   .load(sheet);
 
-console.log(i18n.getLanguage('ru').getTranslate('title'));
+console.log(i18n.getLanguage('en').getTranslate('title'));
 console.log(__('title'));
 ```
 
