@@ -24,6 +24,11 @@
 2. Kopieren Sie den Inhalt der Datei [i18n.js](../../src/i18n.js) und fügen Sie ihn in eine neue Datei in Ihrem Google Apps Script-Projekt ein.
 
 
+## Dokumentation
+
+Eine ausführliche Dokumentation finden Sie auf der Seite [Wiki](../../../../wiki/de).
+
+
 ## Verwendung
 
 ### Beispiel 1
