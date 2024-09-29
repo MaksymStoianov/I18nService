@@ -28,19 +28,11 @@
  * `I18nService` - представляет собой объект реализующий работу интернационализации.
  * @class               I18nService
  * @namespace           I18nService
- * @version             1.1.2
+ * @version             1.1.3
  * @author              Maksym Stoianov <stoianov.maksym@gmail.com>
  * @license             MIT
  * @tutorial            https://maksymstoianov.com/
  * @see                 [GitHub](https://github.com/MaksymStoianov/I18nService)
- * 
- * @todo В метод `I18n.load()` добавить возможность загружать переводы `json` по url-ссылке.
- * @todo Определять метаданные, например:
- * "@metadata": {
- * 	"authors": ['Maksym Stoianov <stoianov.maksym@gmail.com>'],
- * 	"updated": "2024-04-19",
- * 	"locale": "en",
- * };
  */
 class I18nService {
 
@@ -78,7 +70,7 @@ class I18nService {
 
 
   /**
-   * Cтатический метод, который используется для определения правильной формы множественного числа слова.
+   * Определяет правильную форму множественного числа слова.
    * @param {number} n
    * @param {string[]} forms
    * @return {string}
@@ -186,7 +178,7 @@ I18nService.I18n = class I18n {
   /**
    * @param {string} [locale]
    * @param {object} [options = {}]
-   * @param {integer} [options.cache = 0] todo Использовать кеш для хранения языка.
+   * @param {integer} [options.cache = 0] Использовать кеш для хранения языка.
    * @param {boolean} [options.translate = false] Автоматически переводить с помощью Google Переводчика.
    */
   constructor(locale, options = {}) {
@@ -209,11 +201,15 @@ I18nService.I18n = class I18n {
     });
 
 
-    if (locale)
+    if (locale) {
       this.setLocale(locale);
+    }
 
-    if (typeof options.translate === 'boolean')
+    // TODO Использовать кеш для хранения языка.
+
+    if (typeof options.translate === 'boolean') {
       this.translate = options.translate;
+    }
 
 
     /**
@@ -272,8 +268,9 @@ I18nService.I18n = class I18n {
    * @return {I18nService.I18n}
    */
   load(...args) {
-    if (!arguments.length)
+    if (!arguments.length) {
       throw new Error(`Параметры () не соответствуют сигнатуре метода ${this.constructor.name}.load.`);
+    }
 
     let data = {};
     let sheet = null;
@@ -283,89 +280,156 @@ I18nService.I18n = class I18n {
      * @param {string} locale
      * @param {Object} translates
      */
-    const setTranslates_ = (locale, translates) => {
-      if (!I18nService.isValidLocaleName(locale)) return false;
+    const _setTranslates = (locale, translates) => {
+      try {
+        if (!I18nService.isValidLocaleName(locale)) {
+          return false;
+        }
 
-      // Метка перевода
-      locale = locale.trim().toLowerCase();
-
-      if (!data[locale])
-        data[locale] = {};
-
-      // todo translates === url
-
-      for (let label in translates) {
         // Метка перевода
-        label = (item => typeof item === 'string' && item.length > 0 ? item : null)(label);
+        locale = locale.trim().toLowerCase();
 
-        if (!I18nService.isValidLabelName(label)) continue;
+        if (!data[locale]) {
+          data[locale] = {};
+        }
 
-        let translate = (item => typeof item === 'string' && item.length >= 0 ? item : null)(translates[label]);
+        // TODO Добавить возможность загружать переводы `json` по url-ссылке.
 
-        if (!I18nService.isValidTranslateName(translate)) continue;
+        // TODO Определять метаданные, например:
+        // "@metadata": {
+        // 	"authors": ['Maksym Stoianov <stoianov.maksym@gmail.com>'],
+        //  	"updated": "2024-04-19",
+        //  	"locale": "en",
+        //  };
 
-        // Устанавливаем текст перевода
-        data[locale][label] = translate;
+        for (let label in translates) {
+          // Метка перевода
+          label = (item => typeof item === 'string' && item.length ? item.trim() : null)(label);
+
+          if (!I18nService.isValidLabelName(label)) {
+            continue;
+          }
+
+          let translate = (item => typeof item === 'string' && item.length >= 0 ? item : null)(translates[label]);
+
+          if (!I18nService.isValidTranslateName(translate)) {
+            continue;
+          }
+
+          // Устанавливаем текст перевода
+          data[locale][label] = translate;
+        }
+      } catch (error) {
+        return false;
+      } finally {
+        return true;
       }
     };
 
 
     // Аргументы: I18n
-    if (args.length === 1 && I18nService.isI18n(args[0]) && Object.isObject(args[0]?._values))
+    if (args.length === 1 && I18nService.isI18n(args[0]) && Object.isObject(args[0]?._values)) {
       this._values = args[0]._values;
+    }
 
     // Аргументы: Language
-    else if (args.length === 1 && I18nService.isLanguage(args[0]) && Object.isObject(args[0]?._values) && typeof args[0]?.locale === 'string')
+    else if (args.length === 1 && I18nService.isLanguage(args[0]) && Object.isObject(args[0]?._values) && typeof args[0]?.locale === 'string') {
       this._values[args[0].locale] = args[0];
+    }
 
     // Аргументы: spreadsheetId, sheetName
-    else if (args.length === 2 && typeof args[0] === 'string' && args[0].length && typeof args[1] === 'string' && args[1].length)
+    else if (args.length === 2 && typeof args[0] === 'string' && args[0].length && typeof args[1] === 'string' && args[1].length) {
       sheet = (ss => ss.getSheetByName(args[1]) ?? ss.insertSheet(args[1]))(SpreadsheetApp.openById(args[0]));
+    }
 
     // Аргументы: spreadsheet, sheetName
-    else if (args.length === 2 && SpreadsheetApp.isSpreadsheet(args[0]) && typeof args[1] === 'string' && args[1].length)
+    else if (args.length === 2 && SpreadsheetApp.isSpreadsheet(args[0]) && typeof args[1] === 'string' && args[1].length) {
       sheet = args[0].getSheetByName(args[1]) ?? args[0].insertSheet(args[1]);
+    }
 
     // Аргументы: sheet
-    else if (args.length === 1 && SpreadsheetApp.isSheet(args[0]))
+    else if (args.length === 1 && SpreadsheetApp.isSheet(args[0])) {
       sheet = args[0];
+    }
 
     // Аргументы: json, locale
-    else if (args.length === 2 && Object.isObject(args[0]) && typeof args[1] === 'string')
-      setTranslates_(args[1], args[0]);
+    else if (args.length === 2 && Object.isObject(args[0]) && typeof args[1] === 'string') {
+      _setTranslates(args[1], args[0]);
+    }
 
     // Аргументы: json
-    else if (args.length === 1 && Object.isObject(args[0]))
-      for (const locale in args[0])
-        setTranslates_(locale, args[0][locale]);
+    else if (args.length === 1 && Object.isObject(args[0])) {
+      for (const locale in args[0]) {
+        _setTranslates(locale, args[0][locale]);
+      }
+    }
 
     else throw new Error(`Недопустимые аргументы: невозможно определить правильную перегрузку статического метода ${this.constructor.name}.load.`);
 
 
     if (sheet) {
-      const [headers, ...values] = sheet
+      const [[, ...headers], ...values] = sheet
         .getDataRange()
         .getDisplayValues();
 
-      let json = headers
-        .slice(1)
-        .map(item => [item, {}]);
+      const json = {};
 
-      for (const [label, ...translates] of values)
-        for (const [i] of json.entries())
-          json[i][1][label] = translates[i];
+      for (let [label, ...translates] of values) {
+        try {
+          for (const [i, translate] of translates.entries()) {
+            const locale = headers[i];
 
-      json = Object.fromEntries(json);
+            if (!json[locale]) {
+              json[locale] = {};
+            }
 
-      for (const locale in json)
-        setTranslates_(locale, json[locale]);
+            json[locale][label] = translate;
+          }
+        } catch (error) {
+          console.warn(error.stack);
+        }
+      }
+
+      for (const locale in json) {
+        _setTranslates(locale, json[locale]);
+      }
     }
 
     for (const locale in data) {
       const translates = data[locale];
 
-      if (!this._values[locale])
-        this._values[locale] = I18nService.newLanguage(locale, translates);
+      if (!this.hasLanguage(locale)) {
+        this.createNewLanguage(locale);
+      }
+
+      const language = this.getLanguage(locale);
+
+      language.addTranslates(translates);
+    }
+
+    return this;
+  }
+
+
+
+  /**
+   * Создает пространство имен для локали.
+   * @param {string} locale Код локали, для который нужно создать пространство имен.
+   * @return {I18nService.I18n} Возвращает текущий экземпляр для цепочки вызовов.
+   */
+  createNewLanguage(locale) {
+    if (!arguments.length) {
+      throw new Error(`Параметры () не соответствуют сигнатуре метода ${this.constructor.name}.createNewLanguage.`);
+    }
+
+    if (!I18nService.isValidLocaleName(locale)) {
+      throw new Error(`Параметры (${typeof locale}) не соответствуют сигнатуре метода ${this.constructor.name}.createNewLanguage.`);
+    }
+
+    locale = locale.trim().toLowerCase();
+
+    if (!this.hasLanguage(locale)) {
+      this._values[locale] = I18nService.newLanguage(locale);
     }
 
     return this;
@@ -379,15 +443,19 @@ I18nService.I18n = class I18n {
    * @return {I18nService.I18n} Возвращает текущий экземпляр для цепочки вызовов.
    */
   setLocale(locale) {
-    if (!arguments.length)
+    if (!arguments.length) {
       throw new Error(`Параметры () не соответствуют сигнатуре метода ${this.constructor.name}.setLocale.`);
+    }
 
-    if (!I18nService.isValidLocaleName(locale))
+    if (!I18nService.isValidLocaleName(locale)) {
       throw new Error(`Параметры (${typeof locale}) не соответствуют сигнатуре метода ${this.constructor.name}.setLocale.`);
+    }
 
     this.locale = locale.trim().toLowerCase();
 
-    this._values[this.locale] = I18nService.newLanguage(locale);
+    if (!this.hasLanguage(this.locale)) {
+      this._values[this.locale] = I18nService.newLanguage(locale);
+    }
 
     return this;
   }
@@ -399,7 +467,7 @@ I18nService.I18n = class I18n {
    * @return {string} Возвращает текущую локаль или `null`, если локаль не установлена.
    */
   getLocale() {
-    return this.locale ?? null;
+    return (this.locale ?? null);
   }
 
 
@@ -410,13 +478,15 @@ I18nService.I18n = class I18n {
    * @return {I18nService.Language} Экземпляр класса [`Language`](#) или `null`.
    */
   getLanguage(locale) {
-    if (!arguments.length)
+    if (!arguments.length) {
       throw new Error(`Параметры () не соответствуют сигнатуре статического метода ${this.constructor.name}.getLanguage.`);
+    }
 
-    if (!I18nService.isValidLocaleName(locale))
+    if (!I18nService.isValidLocaleName(locale)) {
       throw new Error(`Параметры (${typeof locale}) не соответствуют сигнатуре метода ${this.constructor.name}.getLanguage.`);
+    }
 
-    return this._values[locale] ?? (this._values[locale] = I18nService.newLanguage(locale));
+    return (this._values[locale] ?? null);
   }
 
 
@@ -426,7 +496,24 @@ I18nService.I18n = class I18n {
    * @return {boolean}
    */
   hasLanguage(locale) {
-    return !!this.values[locale];
+    return !!this._values[locale];
+  }
+
+
+
+  /**
+   * @return {Object}
+   */
+  json() {
+    const result = {};
+
+    for (const locale in this._values) {
+      if (!result[locale]) {
+        result[locale] = (this._values[locale]?.values ?? {});
+      }
+    }
+
+    return result;
   }
 
 
@@ -506,9 +593,7 @@ I18nService.Language = class Language {
 
 
     if (Object.isObject(values)) {
-      for (const label in values) {
-        this.addTranslate(label, values[label]);
-      }
+      this.addTranslates(values);
     }
 
   }
@@ -521,11 +606,13 @@ I18nService.Language = class Language {
    * @return {I18nService.Language} Возвращает текущий экземпляр для цепочки вызовов.
    */
   setLocale(locale) {
-    if (!arguments.length)
+    if (!arguments.length) {
       throw new Error(`Параметры () не соответствуют сигнатуре метода ${this.constructor.name}.setLocale.`);
+    }
 
-    if (!I18nService.isValidLocaleName(locale))
+    if (!I18nService.isValidLocaleName(locale)) {
       throw new Error(`Параметры (${typeof locale}) не соответствуют сигнатуре метода ${this.constructor.name}.setLocale.`);
+    }
 
     this.locale = locale.trim();
 
@@ -539,7 +626,7 @@ I18nService.Language = class Language {
    * @return {string} Возвращает текущую локаль или `null`, если локаль не установлена.
    */
   getLocale() {
-    return this.locale ?? null;
+    return (this.locale ?? null);
   }
 
 
@@ -550,16 +637,41 @@ I18nService.Language = class Language {
    * @return {I18nService.Language} Возвращает текущий экземпляр для цепочки вызовов.
    */
   addTranslate(label, translate) {
-    if (!arguments.length)
+    if (!arguments.length) {
       throw new Error(`Параметры () не соответствуют сигнатуре метода ${this.constructor.name}.addTranslate.`);
+    }
 
-    if (!I18nService.isValidLabelName(label))
+    if (!I18nService.isValidLabelName(label)) {
       throw new Error(`Параметры (${typeof label}) не соответствуют сигнатуре метода ${this.constructor.name}.addTranslate.`);
+    }
 
-    if (!I18nService.isValidTranslateName(translate))
+    if (!I18nService.isValidTranslateName(translate)) {
       throw new Error(`Параметры (${typeof label}, ${typeof translate}) не соответствуют сигнатуре метода ${this.constructor.name}.addTranslate.`);
+    }
 
     this.values[label.toLowerCase()] = translate;
+
+    return this;
+  }
+
+
+
+  /**
+   * @param {Object} translates
+   * @return {I18nService.Language} Возвращает текущий экземпляр для цепочки вызовов.
+   */
+  addTranslates(translates) {
+    if (!arguments.length) {
+      throw new Error(`Параметры () не соответствуют сигнатуре метода ${this.constructor.name}.addTranslates.`);
+    }
+
+    if (!Object.isObject(translates)) {
+      throw new Error(`Invalid parameter.`);
+    }
+
+    for (const label in translates) {
+      this.addTranslate(label, translates[label]);
+    }
 
     return this;
   }
@@ -639,6 +751,7 @@ I18nService.Language = class Language {
 
 
 
+// TODO Перенести `isObject` в класс `I18nService`.
 if (typeof Object.isObject !== 'function') {
   /**
    * Возвращает `true`, если объект является [`Object`](#); иначе, `false`.
@@ -655,6 +768,7 @@ if (typeof Object.isObject !== 'function') {
 
 
 
+// TODO Перенести `isSpreadsheet` в класс `I18nService`.
 if (typeof SpreadsheetApp.isSpreadsheet !== 'function') {
   /**
    * Возвращает `true`, если объект является [`Spreadsheet`](https://developers.google.com/apps-script/reference/spreadsheet/spreadsheet); иначе, `false`.
@@ -671,7 +785,7 @@ if (typeof SpreadsheetApp.isSpreadsheet !== 'function') {
 
 
 
-
+// TODO Перенести `isSheet` в класс `I18nService`.
 if (typeof SpreadsheetApp.isSheet !== 'function') {
   /**
    * Возвращает `true`, если объект является [`Sheet`](https://developers.google.com/apps-script/reference/spreadsheet/sheet); иначе, `false`.
